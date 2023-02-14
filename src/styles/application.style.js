@@ -197,6 +197,6 @@ export const applicationStyles = {
   helpTxt: {fontFamily: theme.FONT_FAMILY, color: Colors.BLACK, fontSize: 16},
   columnWrapperStyle: {
     flexGrow: 1,
-    justifyContent: 'space-evenly',
+    alignItems: 'center',
   },
 };

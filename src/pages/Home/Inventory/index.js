@@ -33,6 +33,8 @@ const Inventory = () => {
   const [isLoadData, setIsLoadData] = useState(false);
   const [openModalProduct, setOpenModalProduct] = useState(false);
   const [openModalWarehouse, setOpenModalWarehouse] = useState(false);
+  const [reloadList, setReloadList] = useState(false);
+
   const filterProduct = [
     {name: 'Tìm theo tên sản phẩm', code: 'name'},
     {name: 'Tìm theo mã sản phẩm', code: 'name'},
@@ -286,6 +288,8 @@ const Inventory = () => {
         filer={filterWarehouse}
         title={'Tìm kiếm kho'}
         onClose={_onCloseModal}
+        reloadList={reloadList}
+        setReloadList={setReloadList}
       />
       <ModalAdd
         listItem={listProduct}
@@ -299,6 +303,8 @@ const Inventory = () => {
         isLoadData={isLoadData}
         onClose={_onCloseModal}
         isChooseType={true}
+        reloadList={reloadList}
+        setReloadList={setReloadList}
       />
     </View>
   );

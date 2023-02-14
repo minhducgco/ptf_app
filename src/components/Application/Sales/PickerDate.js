@@ -1,6 +1,6 @@
 import React, {useState, useContext, Fragment} from 'react';
 import moment from 'moment';
-import {StyleSheet, Image} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {Item, Label, Input} from 'native-base';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -8,6 +8,7 @@ import Colors from '@styles/color';
 import theme from '@styles/theme.style';
 import {VN_FORMAT_DATE} from '@configs/Configs';
 import {LocalizationContext} from '@context/index';
+import IconCalendar from '@assets/svg/icons/SvgIconCalendar';
 
 export default function PickerDateItem({
   title = 'from_hour',
@@ -57,10 +58,9 @@ export default function PickerDateItem({
           value={value === '' ? '' : value}
           defaultValue={value === '' ? '' : value}
         />
-        <Image
-          source={require('@assets/icons/ic_calendar.jpg')}
-          style={styles.imageIcon}
-        />
+        <View style={styles.IconCalendar}>
+          <IconCalendar color={'#000000'} />
+        </View>
       </Fragment>
     </Item>
   );
@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
     color: Colors.BLACK,
     fontSize: 14,
   },
+  IconCalendar: {marginRight: 10},
   imageIcon: {
     width: 26,
     height: 26,

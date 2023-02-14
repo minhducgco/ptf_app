@@ -461,6 +461,9 @@ export const onCreateSaleOrder = async ({
   order_line = [],
   x_type_return_id = null,
   x_is_return = false,
+  x_sale_order_attach_ids = [],
+  note = '',
+  x_sale_order_id = null,
 }) =>
   new Promise((handleSuccess, handleError) => {
     let body = {
@@ -486,6 +489,12 @@ export const onCreateSaleOrder = async ({
     }
     if (team_id) {
       body.team_id = team_id;
+    }
+    if (note) {
+      body.note = note;
+    }
+    if (x_sale_order_attach_ids) {
+      body.x_sale_order_attach_ids = x_sale_order_attach_ids;
     }
     if (x_channel_id) {
       body.x_channel_id = x_channel_id;
@@ -520,7 +529,10 @@ export const onCreateSaleOrder = async ({
     if (x_type_return_id) {
       body.x_type_return_id = x_type_return_id;
     }
-    // console.log(JSON.stringify(body, null, 2));
+    if (x_sale_order_id) {
+      body.x_sale_order_id = x_sale_order_id;
+    }
+    console.log(JSON.stringify(body, null, 2));
     let options = {
       method: 'POST',
       headers: {
@@ -528,7 +540,7 @@ export const onCreateSaleOrder = async ({
       },
       body: JSON.stringify(body),
     };
-    console.log(JSON.stringify(body, null, 2));
+    // console.log(JSON.stringify(body, null, 2));
     HTTP.post(
       '/sale_order/create',
       options,
@@ -565,6 +577,9 @@ export const onUpdateSaleOrder = async ({
   order_line = [],
   x_type_return_id = null,
   x_is_return = false,
+  note = '',
+  x_sale_order_attach_ids = [],
+  x_sale_order_id = null,
 }) =>
   new Promise((handleSuccess, handleError) => {
     let body = {
@@ -625,7 +640,16 @@ export const onUpdateSaleOrder = async ({
     if (x_type_return_id) {
       body.x_type_return_id = x_type_return_id;
     }
-    // console.log(JSON.stringify(body, null, 2));
+    if (note) {
+      body.note = note;
+    }
+    if (x_sale_order_id) {
+      body.x_sale_order_id = x_sale_order_id;
+    }
+    if (x_sale_order_attach_ids) {
+      body.x_sale_order_attach_ids = x_sale_order_attach_ids;
+    }
+    console.log(JSON.stringify(body, null, 2));
     let options = {
       method: 'POST',
       headers: {

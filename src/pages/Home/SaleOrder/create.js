@@ -38,7 +38,22 @@ const CreateNewOrder = ({route}) => {
   const [priceList, setPriceList] = useState(detail?.pricelist_id || '');
   const [paymentTerm, setPaymentTerm] = useState(detail?.payment_term_id || {});
   const [chanel, setChannel] = useState(detail?.x_channel_id || {});
-  const [orderDetails, setOrderDetails] = useState(detail?.order_line || []);
+  const [orderDetails, setOrderDetails] = useState(
+    detail?.order_line.map(item => ({
+      name: item.name,
+      x_factor_str: item.x_factor_str,
+      product_id: item.product_id,
+      uom_id: item.uom_id,
+      product_oum: item.product_oum,
+      id: item.product_id,
+      tax_id: item.tax_id,
+      default_code: item.default_code,
+      price_unit: item.price_unit,
+      price_subtotal: item.price_unit,
+      x_product_qty_request: item.x_product_qty_request,
+      active: true,
+    })) || [],
+  );
   const [user, setUser] = useState(detail?.user_id || userLogin);
   const [team, setTeam] = useState(detail?.team_id || teamLogin);
   const [branch, setBranch] = useState(detail?.branch_id || branchLogin);
@@ -48,7 +63,7 @@ const CreateNewOrder = ({route}) => {
   const [pickingPolicy, setPickingPolicy] = useState();
   const [commitmentDate, setCommitmentDate] = useState('');
   const [incoterm, setIncoterm] = useState(detail?.incoterm || {});
-  const [phone, setPhone] = useState(detail?.phone || '');
+  const [phone, setPhone] = useState(detail?.phone || detail?.mobile || '');
 
   const _onAction = async () => {
     let data = {
@@ -124,6 +139,7 @@ const CreateNewOrder = ({route}) => {
       <OptionContent
         isEdit={true}
         state={detail?.partner.name !== undefined ? 'edit' : 'draft'}
+        deliveryStatus={detail?.x_delivery_status || 'no'}
         _onAction={_onAction}
         _onUpdate={_onUpdate}
         partner={partner}

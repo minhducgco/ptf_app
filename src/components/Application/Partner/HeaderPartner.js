@@ -16,6 +16,7 @@ export default function HeaderPartner({
   search = true,
   textSearch,
   setTextSearch,
+  listOrder = false,
 }) {
   const {t} = useContext(LocalizationContext);
   return (
@@ -27,6 +28,7 @@ export default function HeaderPartner({
           data={data}
           disabled={disabled}
           textSearch={textSearch}
+          listOrder={listOrder}
           setTextSearch={setTextSearch}
         />
       )}

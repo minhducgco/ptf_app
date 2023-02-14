@@ -25,6 +25,10 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>I work on apps that need to store some data that gets displayed to the user</string>
+	<key>NSCameraUsageDescription</key>
+	<string>I work on apps that need to store some data that gets displayed to the user</string>
 	<dict>
 		<key>NSExceptionDomains</key>
 		<dict>

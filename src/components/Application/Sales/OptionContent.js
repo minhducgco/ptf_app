@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import normalize from 'react-native-normalize';
-import {Form, Content, Container} from 'native-base';
+import {Form, Container} from 'native-base';
 // import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 
@@ -36,14 +36,15 @@ import {
   getListWarehouses,
 } from '@repository/Sales/Sales';
 import ItemSeparator from '@components/Application/Sales/ItemSeparator';
-// import ItemProduct from '@components/Application/Sales/ItemProduct';
+import ModalEditProduct from '@components/Application/Sales/ModalEditProduct';
 import RenderProduct from '@components/Application/Sales/RenderProduct';
-import ModalAdd from '@components/Application/Inventory/ModalAdd';
+import ModalAdd from '@components/Application/Sales/ModalAdd';
 import {AddButton} from '@components/Application/Sales/AddButton';
 
 export default function OptionContent(props) {
   const {t} = useContext(LocalizationContext);
   const scrollRef = useRef(null);
+  const childCompRef = useRef();
   const navigation = useNavigation();
   const accessToken = useSelector(st => st.auth.accessToken);
   const WIDTH = Dimensions.get('screen').width;
@@ -58,6 +59,8 @@ export default function OptionContent(props) {
   const [listProduct, setListProduct] = useState([]);
   const [isLoadData, setIsLoadData] = useState(false);
   const [openModalProduct, setOpenModalProduct] = useState(false);
+  const [reloadList, setReloadList] = useState(false);
+  const [isEditProduct, setIsEditProduct] = useState(false);
   const [tab, setTab] = useState([
     {key: 'detail', active: true, id: 0, name: 'Chi tiết đơn hàng'},
     {key: 'other', active: false, id: 1, name: 'Thông tin khác'},
@@ -193,38 +196,39 @@ export default function OptionContent(props) {
       });
   }, [accessToken]);
 
-  const _getProducts = async partnerId => {
-    setIsLoadData(true);
-    await getProducts({
-      accessToken: accessToken,
-      items_per_page: 100000,
-      partnerId: partnerId,
-    })
-      .then(res => {
-        // console.log(JSON.stringify(res.data, null, 2));
-        setListProduct(
-          res.data.map(item => ({
-            name: item.name,
-            product_id: item.product_id,
-            uom_id: item.uom_id,
-            id: item.product_id,
-            tax_id: item.tax_id,
-            default_code: item.default_code,
-            price_unit: item.price_unit,
-            price_subtotal: item.price_unit,
-            x_product_qty_request: 1,
-            active: false,
-          })),
-        );
-        setIsLoadData(false);
+  useEffect(() => {
+    props.partner.id &&
+      getProducts({
+        accessToken: accessToken,
+        items_per_page: 100000,
+        partnerId: props.partner.id,
       })
-      .catch(err => {
-        setIsLoadData(false);
-        if (__DEV__) {
-          console.log('getProducts: ', err);
-        }
-      });
-  };
+        .then(res => {
+          // console.log(JSON.stringify(res.data, null, 2));
+          setListProduct(
+            res.data.map(item => ({
+              name: item.name,
+              x_factor_str: item.x_factor_str,
+              product_id: item.product_id,
+              uom_id: item.uom_id,
+              id: item.product_id,
+              tax_id: item.tax_id,
+              default_code: item.default_code,
+              price_unit: item.price_unit,
+              price_subtotal: item.price_unit,
+              x_product_qty_request: 1,
+              active: false,
+            })),
+          );
+          setIsLoadData(false);
+        })
+        .catch(err => {
+          setIsLoadData(false);
+          if (__DEV__) {
+            console.log('getProducts: ', err);
+          }
+        });
+  }, [accessToken, props.partner.id]);
 
   const onHandleActon = item => {
     switch (item.key) {
@@ -262,27 +266,24 @@ export default function OptionContent(props) {
   };
 
   const onChangePartner = item => {
-    // console.log(JSON.stringify(item, null, 2));
+    console.log(item);
     props.setPartner(item);
-    props.setPhone(item.phone);
+    props.setPhone(item.phone || item.mobile);
     props.setPartnerInvoice(item);
     props.setPartnerShipping(item);
     props.setPriceList(item.product_pricelist);
     props.setChannel(item.x_channel_group_id);
     props.setPaymentTerm(item.payment_term_id);
     props.setOrderDetails([]);
-    _getProducts(item.id);
   };
-
-  // const _openModalEdit = (index, item) => {
-  //   setIsOpenModal(true);
-  //   setButtons(ButtonsEditCancel);
-  //   setIndexLines(index);
-  //   setItemRegis(item);
-  // };
 
   const _onCloseModal = () => {
     setOpenModalProduct(false);
+  };
+
+  const onChangeProduct = it => {
+    childCompRef.current.onUpdateProduct(it);
+    setReloadList(true);
   };
 
   const _onPressFAB = () => {
@@ -292,19 +293,6 @@ export default function OptionContent(props) {
       setOpenModalProduct(true);
     }
   };
-
-  // const _openModalCreate = async () => {
-  //   setIsOpenModal(true);
-  //   setItemRegis({});
-  // };
-
-  // const _openModalProduct = () => {
-  //   if (!props.partner) {
-  //     showMessage('Vui lòng chọn khách hàng');
-  //   } else {
-  //     setOpenModalProduct(true);
-  //   }
-  // };
 
   const onSelectProduct = item => {
     const newList = [...props.orderDetails];
@@ -328,24 +316,17 @@ export default function OptionContent(props) {
       index={index}
       item={item}
       listOum={listOum}
+      ref={childCompRef}
       listTaxes={listTaxes}
       products={props.orderDetails}
-      partnerId={props.partner.id || 0}
       setProducts={props.setOrderDetails}
       onDelete={onDeleteProduct}
+      setReloadList={setReloadList}
+      setIsEditProduct={setIsEditProduct}
     />
   );
 
   const renderSeparator = () => <ItemSeparator />;
-
-  // const footerOrder = () => {
-  //   return (
-  //     <TouchableOpacity style={styles.addMore} onPress={_openModalProduct}>
-  //       <Icon name="cart-plus" size={20} color={color.MONZA} />
-  //       <Text style={styles.addTxt}>Thêm sản phẩm</Text>
-  //     </TouchableOpacity>
-  //   );
-  // };
 
   return (
     <Container>
@@ -361,8 +342,16 @@ export default function OptionContent(props) {
         isLoadData={isLoadData}
         onClose={_onCloseModal}
         isChooseType={true}
+        reloadList={reloadList}
+        setReloadList={setReloadList}
       />
-      <Content showsVerticalScrollIndicator={false}>
+      <ModalEditProduct
+        visible={isEditProduct}
+        setVisible={setIsEditProduct}
+        partnerId={props.partner.id || 0}
+        onChangeProduct={onChangeProduct}
+      />
+      <ScrollView showsVerticalScrollIndicator={false}>
         <Form>
           <Text style={styles.state}>{t(props.state)}</Text>
           <PickerPartner
@@ -372,13 +361,6 @@ export default function OptionContent(props) {
             disabled={!props.isEdit}
             required
           />
-          {/* <PickerComplain
-            title={'contract_principles'}
-            data={[]}
-            name={props?.contract?.name || ''}
-            setValue={props.setContract}
-            disabled={!props.isEdit}
-          /> */}
           <PickerPartner
             title={'partner_invoice'}
             name={props?.partnerInvoice?.name || ''}
@@ -398,12 +380,7 @@ export default function OptionContent(props) {
             defaultValue={props?.phone}
             disabled={true}
           />
-          {/* <PickerDate
-            title="validity_date"
-            value={props?.validityDate}
-            setValue={props.setValidityDate}
-            disabled={!props.isEdit}
-          /> */}
+
           <PickerDate
             title="date_order"
             value={props?.dateOrder}
@@ -422,6 +399,29 @@ export default function OptionContent(props) {
             name={props?.paymentTerm?.name || ''}
             setValue={props.setPaymentTerm}
             disabled={!props.isEdit}
+          />
+          <EditableItem
+            title={'delivery_status'}
+            defaultValue={
+              props?.deliveryStatus === 'delivering'
+                ? 'Đang giao hàng'
+                : props?.deliveryStatus === 'partial_delivered'
+                ? 'Giao hàng 1 phần'
+                : props?.deliveryStatus === 'delivered'
+                ? 'Đã giao hàng'
+                : props?.deliveryStatus === 'unsuccessful'
+                ? 'Không thành công'
+                : props?.deliveryStatus === 'unknown'
+                ? 'Không xác định'
+                : props?.deliveryStatus === 'to_delivery'
+                ? 'Chờ xuất hàng'
+                : props?.deliveryStatus === 'not_delivery'
+                ? 'Chưa xuất hàng'
+                : props?.deliveryStatus === 'no'
+                ? 'Không có gì để xuất hàng'
+                : 'Không có gì để xuất hàng'
+            }
+            disabled={true}
           />
           <PickerComplain
             title={'channel'}
@@ -498,7 +498,7 @@ export default function OptionContent(props) {
             <View style={styles.detail(WIDTH)} />
           </ScrollView>
         </Form>
-      </Content>
+      </ScrollView>
       {props.isEdit && props.state === 'draft' ? (
         <ButtonForms data={ButtonSaveCancel} onAction={onHandleActon} />
       ) : props.isEdit && props.state === 'edit' ? (

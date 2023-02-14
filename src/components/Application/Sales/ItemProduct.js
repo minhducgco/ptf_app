@@ -45,9 +45,14 @@ const ItemProduct = ({
               {/* {item?.x_is_product_promotion && item?.price_unit <= 0 && (
                 <AntDesign name="gift" size={20} style={styles.icon} />
               )} */}
-              <Text style={styles.txt(true)}>{item?.name}</Text>
+              <Text style={styles.txt(true)}>
+                [{item?.default_code}] {item?.name}
+              </Text>
             </View>
-            {item?.product_uom ? (
+            <Text style={styles.txt(false)}>
+              {'Quy cách'}: {item?.x_factor_str}
+            </Text>
+            {item?.x_product_qty_request ? (
               <Text style={styles.txt(false)}>
                 {'Số lượng yêu cầu'}: {item?.x_product_qty_request}
               </Text>
@@ -69,12 +74,12 @@ const ItemProduct = ({
                 {'Số lượng chưa xuất kho'}: {item?.qty_not_yet_shipped}
               </Text>
             ) : null} */}
-            {item?.product_uom ? (
+            {item?.uom_id ? (
               <Text style={styles.txt(false)}>
-                {'Đơn vị'}: {item?.product_uom.name}
+                {'Đơn vị'}: {item?.uom_id.name}
               </Text>
             ) : null}
-            {item?.product_uom ? (
+            {item?.price_unit ? (
               <Text style={styles.txt(false)}>
                 {'Đơn giá'}: {num2numDong(item?.price_unit)}
               </Text>
@@ -87,12 +92,12 @@ const ItemProduct = ({
                 })}
               </Text>
             ) : null}
-            {item?.product_uom ? (
+            {item?.discount ? (
               <Text style={styles.txt(false)}>
                 {'Chiết khấu (%)'}: {item?.discount}%
               </Text>
             ) : null}
-            {item?.product_uom ? (
+            {item?.price_subtotal ? (
               <Text style={styles.txt(false)}>
                 {'Thành tiền'}: {num2numDong(item?.price_subtotal)}
               </Text>

@@ -9,7 +9,12 @@ import Colors from '@styles/color';
 import ModalViewImg from '@components/Application/Return/ModalViewImg';
 import {detailApproveStyle as styles} from '@styles/detailApprove.style';
 
-export default function FileSelected({item, index, onRemove = () => {}}) {
+export default function FileSelected({
+  item,
+  index,
+  view = false,
+  onRemove = () => {},
+}) {
   const [isOpenModalFile, setIsOpenModalFile] = useState(false);
   const onOpenModalFile = () => {
     setIsOpenModalFile(true);
@@ -25,7 +30,7 @@ export default function FileSelected({item, index, onRemove = () => {}}) {
   }, [item?.url]);
 
   return (
-    <View>
+    <View key={index}>
       <TouchableOpacity
         disabled={
           item?.name.includes('.docx') || item?.name.includes('.xlsx')
@@ -64,14 +69,16 @@ export default function FileSelected({item, index, onRemove = () => {}}) {
               {item?.name}
             </Text>
           </View>
-          <TouchableOpacity
-            style={[
-              styles.viewFlex(0.05),
-              {marginHorizontal: normalize(6), alignSelf: 'center'},
-            ]}
-            onPress={() => onRemove(index)}>
-            <AntDesign name="closecircle" size={15} color="#000" />
-          </TouchableOpacity>
+          {!view && (
+            <TouchableOpacity
+              style={[
+                styles.viewFlex(0.05),
+                {marginHorizontal: normalize(6), alignSelf: 'center'},
+              ]}
+              onPress={() => onRemove(index)}>
+              <AntDesign name="closecircle" size={15} color="#000" />
+            </TouchableOpacity>
+          )}
         </View>
         <Image
           resizeMode={'contain'}
@@ -81,9 +88,15 @@ export default function FileSelected({item, index, onRemove = () => {}}) {
             alignSelf: 'center',
             marginVertical: normalize(10),
           }}
-          source={{
-            uri: `data:application/pdf;base64,${item?.value}`,
-          }}
+          source={
+            item?.url
+              ? {
+                  uri: item?.url,
+                }
+              : {
+                  uri: `data:application/pdf;base64,${item?.value}`,
+                }
+          }
         />
       </TouchableOpacity>
       <ModalViewImg

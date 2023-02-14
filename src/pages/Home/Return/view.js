@@ -11,7 +11,6 @@ import {
   RefreshControl,
 } from 'react-native';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
-// import Toast from 'react-native-tiny-toast';
 import normalize from 'react-native-normalize';
 import HeaderBackStatusBar from '@components/headers/HeaderBackStatusBar';
 import {
@@ -23,7 +22,6 @@ import {saleOrderStyles as styles} from '@styles/saleorder.style';
 import {LocalizationContext} from '@context/index';
 import {num2numDong, showMessage} from '@utils/index';
 import PlaceholderScreen from '@components/loadings/PlaceholderScreen';
-import RefuseReason from '@components/modal/RefuseReason';
 import ModalPromotions from '@components/modal/ModalPromotions';
 // import ModalApprove from '@components/modal/ModalApprove';
 import ItemSeparator from '@components/Application/Sales/ItemSeparator';
@@ -31,6 +29,7 @@ import {setOrderLine} from '@redux/actions/dataAction';
 import LineItem from '@components/Application/Sales/LineItem';
 import moment from 'moment';
 import {VN_FORMAT_DATE} from '@configs/Configs';
+import FileSelected from '@components/Application/Return/FileSelected';
 import RenderProduct from '@components/Application/Return/RenderProduct';
 const WIDTH = Dimensions.get('screen').width;
 
@@ -45,13 +44,11 @@ export default function DetailReturnScreen({route}) {
   const [amountTotal, setAmountTotal] = useState(0);
   const [amountUntaxed, setAmountUntaxed] = useState(0);
   const [amountTax, setAmountTax] = useState(0);
-  const [textCancel, setTextCancel] = useState('');
   const [tab, setTab] = useState([
     {key: 'detail', active: true, id: 0, name: 'Chi tiết đơn hàng'},
-    {key: 'other', active: false, id: 1, name: 'Thông tin khác'},
-    // {key: 'ctkm', active: false, id: 2, name: 'CTKM có thể áp dụng'},
+    {key: 'file', active: false, id: 1, name: 'Tệp đính kèm'},
+    {key: 'other', active: false, id: 2, name: 'Thông tin khác'},
   ]);
-  const [isOpenCancel, setIsOpenCancel] = useState(false);
   const [isOpenPromotion, setIsOpenPromotion] = useState(false);
   // const [listPromotion, setListPromotion] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,8 +60,8 @@ export default function DetailReturnScreen({route}) {
       setLoading(true);
       setTab([
         {key: 'detail', active: true, id: 0, name: 'Chi tiết đơn hàng'},
-        {key: 'other', active: false, id: 1, name: 'Thông tin khác'},
-        // {key: 'ctkm', active: false, id: 2, name: 'CTKM có thể áp dụng'},
+        {key: 'file', active: false, id: 1, name: 'Tệp đính kèm'},
+        {key: 'other', active: false, id: 2, name: 'Thông tin khác'},
       ]);
       getOrder();
     }, []),
@@ -96,7 +93,7 @@ export default function DetailReturnScreen({route}) {
       id: id,
     })
       .then(res => {
-        console.log(JSON.stringify(res.x_state_return, null, 2));
+        // console.log(JSON.stringify(res, null, 2));
         setDetail(res);
         setAmountUntaxed(res?.amount_untaxed);
         setAmountTax(res?.amount_tax);
@@ -111,42 +108,7 @@ export default function DetailReturnScreen({route}) {
       });
   };
 
-  // Action
   const handleAction = key => {
-    // Nếu action hủy hiện modal để nhập lý do hủy
-    // if (key === 'action_cancel') {
-    //   setIsOpenCancel(true);
-    // Xử lí nếu là action áp dụng CTKM
-    // } else if (key === 'action_promotion') {
-    //   setIsOpenPromotion(true);
-    // const loadingAction = Toast.showLoading();
-    // handleActionSaleOrder({
-    //   id,
-    //   accessToken,
-    //   action: key,
-    // })
-    //   .then(res => {
-    //     // console.log('🚀 ~ file: view.js ~ line 153 ~ .then ~ res', res);
-    //     // Toast.hide(loadingAction);
-    //     if (res.list_promotion) {
-    //       console.log(res);
-    //       setListPromotion(res.list_promotion);
-    //       setIsOpenPromotion(true);
-    //     } else {
-    //       // Toast.showSuccess(t('edit_success'));
-    //       setLoading(true);
-    //       getOrder();
-    //     }
-    //   })
-    //   .catch(err => {
-    //     showMessage('TCL: handleAction -> err', err);
-    //     // Toast.hide(loadingAction);
-    //   });
-    // Nếu là action phê duyệt thì mở modal chọn option phê duyệt
-    // } else if (key === 'action_confirm') {
-    //   setIsOpenApprove(true);
-    // } else {
-    // const loadingAction = Toast.showLoading();
     handleActionSaleOrder({
       id,
       accessToken,
@@ -164,26 +126,6 @@ export default function DetailReturnScreen({route}) {
         showMessage(err);
       });
     // }
-  };
-  // Hủy đơn hàng
-  const onActionCancel = () => {
-    // const loadingAction = Toast.showLoading();
-    handleActionSaleOrder({
-      id,
-      accessToken,
-      action: 'action_cancel',
-      textCancel,
-    })
-      .then(res => {
-        // Toast.hide(loadingAction);
-        setLoading(true);
-        getOrder();
-      })
-      .catch(err => {
-        // Toast.hide(loadingAction);
-        showMessage(err);
-        console.log(err);
-      });
   };
 
   const closeModalPromotion = () => {
@@ -207,23 +149,6 @@ export default function DetailReturnScreen({route}) {
         showMessage(err);
       });
   };
-  // Action phê duyệt
-  // const handleApprove = key => {
-  //   setIsOpenApprove(false);
-  //   handleActionSaleOrder({
-  //     id,
-  //     accessToken,
-  //     action: 'action_approve',
-  //     approveType: key,
-  //   })
-  //     .then(res => {
-  //       setLoading(true);
-  //       getOrder();
-  //     })
-  //     .catch(err => {
-  //       showMessage('TCL: handleApprove -> err', err);
-  //     });
-  // };
 
   const onEdit = () => {
     dispatch(setOrderLine(detail?.order_line, true));
@@ -298,16 +223,9 @@ export default function DetailReturnScreen({route}) {
               </Text>
             </View>
             <LineItem title={t('customer')} value={detail?.partner?.name} />
-            {/* <LineItem
-              title={'Địa chỉ xuất hoá đơn'}
-              value={detail?.partner_invoice_id?.name}
-            /> */}
-            {/* <LineItem
-              title={'Địa chỉ giao hàng'}
-              value={detail?.partner_shipping_id?.name}
-            /> */}
+            <LineItem title={'Số điện thoại'} value={detail?.phone} />
             <LineItem
-              title={'Ngày đặt hàng'}
+              title={'Ngày trả hàng'}
               value={moment(detail?.date_order).format(VN_FORMAT_DATE)}
             />
             <LineItem title={'Bảng giá'} value={detail?.pricelist_id} />
@@ -319,8 +237,16 @@ export default function DetailReturnScreen({route}) {
               title={'Loại trả hàng'}
               value={detail?.x_type_return_id?.name}
             />
+            <LineItem
+              title={'Đơn bán hàng liên quan'}
+              value={detail?.x_sale_order_id?.name}
+            />
             <LineItem title={'Kho'} value={detail?.warehouse_id?.name} />
             <LineItem title={'Kênh'} value={detail?.x_channel_id?.name} />
+            <LineItem
+              title={'Các điều khoản và điều kiện'}
+              value={detail?.note}
+            />
             <ScrollView
               style={styles.tabContain}
               horizontal
@@ -353,6 +279,11 @@ export default function DetailReturnScreen({route}) {
                 />
               </View>
               <View style={styles.detail}>
+                {detail?.x_sale_order_attach_ids?.map((it, ind) => (
+                  <FileSelected item={it} index={ind} view={true} />
+                ))}
+              </View>
+              <View style={styles.detail}>
                 <LineItem
                   title={t('table_price')}
                   value={detail?.pricelist_id}
@@ -366,47 +297,7 @@ export default function DetailReturnScreen({route}) {
                   value={detail?.team_id?.name}
                 />
                 <LineItem title={'Chi nhánh'} value={detail?.branch_id?.name} />
-                {/* <LineItem
-                  title={'Tham chiếu khách hàng'}
-                  value={detail?.client_order_ref}
-                />
-                <LineItem
-                  title={'Vị thế tài chính'}
-                  value={detail?.fiscal_position_id?.name}
-                />
-                <LineItem
-                  title={'Tài khoản phân tích'}
-                  value={detail?.analytic_account_id?.name}
-                />
-                <LineItem
-                  title={'Chính sách giao hàng'}
-                  value={t(detail?.picking_policy)}
-                />
-                <LineItem title={'Tài liệu gốc'} value={detail?.origin} />
-                <LineItem
-                  title={'Cơ hội'}
-                  value={detail?.opportunity_id?.name}
-                />
-                <LineItem
-                  title={'Chiến dịch'}
-                  value={detail?.campaign_id?.name}
-                />
-                <LineItem
-                  title={'Kênh trung gian'}
-                  value={detail?.medium_id?.name}
-                />
-                <LineItem title={'Nguồn'} value={detail?.source_id?.name} /> */}
               </View>
-              {/* <View style={styles.detail}>
-                <FlatList
-                  data={detail?.x_promotion_ids}
-                  keyExtractor={item => item.id}
-                  renderItem={renderProduct}
-                  ItemSeparatorComponent={renderSeparator}
-                  showsVerticalScrollIndicator={false}
-                  scrollEnabled={false}
-                />
-              </View> */}
             </ScrollView>
             <View style={styles.totalContain}>
               <Text style={styles.amountTotal}>
@@ -441,14 +332,6 @@ export default function DetailReturnScreen({route}) {
           </View>
         </>
       )}
-      <RefuseReason
-        visible={isOpenCancel}
-        refuseReason={textCancel}
-        setRefuseReason={setTextCancel}
-        setVisible={setIsOpenCancel}
-        onAction={onActionCancel}
-        title={t('reason')}
-      />
       <ModalPromotions
         isOpen={isOpenPromotion}
         // data={listPromotion}
@@ -457,12 +340,6 @@ export default function DetailReturnScreen({route}) {
         namePartner={detail?.partner?.name}
         applyPromotion={applyPromotion}
       />
-      {/* <ModalApprove
-        isOpen={isOpenApprove}
-        onClose={() => setIsOpenApprove(false)}
-        approve={handleApprove}
-        name={detail?.name}
-      /> */}
     </View>
   );
 }

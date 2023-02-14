@@ -6,7 +6,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
 import {getDeviceId, getDevice} from 'react-native-device-info';
 
-// import {showMessage} from '@utils/';
+import {showMessage} from '@utils/';
 import {
   onRevoke,
   onUserLogin,
@@ -64,23 +64,22 @@ export const AuthenticationProvider = () => {
             // console.log(JSON.stringify(res, null, 2));
             // Toast.hide(loading);
             if (Object.keys(res).length > 0) {
-              // showMessage('Đăng nhập thành công!');
+              showMessage('Đăng nhập thành công!');
               await Database.setAccessToken({
                 value: res.access_token,
               });
               await Database.setUserLogin({value: res});
               dispatch(onUserLogin(res, res.access_token));
             } else {
-              // showMessage('Đăng nhập thất bại, vui lòng kiểm tra lại!');
-              // showMessage('Thất bại ', res);
+              showMessage('Đăng nhập thất bại, vui lòng kiểm tra lại!');
+              showMessage('Thất bại ', res);
             }
             // Toast.hide();
           })
-          .catch(_err => {
+          .catch(err => {
             // Toast.hide(loading);
-            // showMessage(err);
-            console.log('Đăng nhập thất bại');
-            // showMessage('Đăng nhập thất bại ', err);
+            showMessage('Đăng nhập thất bại, vui lòng kiểm tra lại!');
+            console.log('Đăng nhập thất bại ', err);
           });
       },
       signOut: async currentAccessToken => {

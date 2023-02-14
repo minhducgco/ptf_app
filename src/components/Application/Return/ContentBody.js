@@ -136,7 +136,7 @@ const ContentBody = ({type}) => {
 
   const _renderItem = ({item, index}) => {
     return (
-      <TouchableOpacity onPress={() => onPress(item)}>
+      <TouchableOpacity onPress={() => onPress(item)} key={index}>
         <View style={styles.touchOpacity}>
           <View style={styles.viewIcon}>
             <View style={styles.viewBoder}>

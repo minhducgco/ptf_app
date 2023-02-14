@@ -22,7 +22,7 @@ import {LocalizationContext} from '@context/index';
 import SvgDashLine from '@assets/svg/SvgDashLine';
 import {VN_FORMAT_DATETIME} from '@configs/Configs';
 import IconSell from '@assets/svg/icons/SvgIconSell';
-import {onGetListOrder} from '@repository/Sales/Sales';
+import {onGetListExchange} from '@repository/Sales/Exchange';
 import PlaceholderScreen from '@components/loadings/PlaceholderScreen';
 import HeaderPartner from '@components/Application/Partner/HeaderPartner';
 
@@ -45,22 +45,23 @@ const ContentBody = ({type}) => {
   const [meta, setMeta] = useState({current_page: 1, next_page: 2});
 
   useEffect(() => {
-    getOrder({page: 1, loadMore: false});
+    getExchange({page: 1, loadMore: false});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getOrder = ({
+  const getExchange = ({
     codeSearch = '',
     valueSearch = '',
     page = 1,
     loadMore = false,
   }) => {
-    onGetListOrder({
+    onGetListExchange({
       accessToken: accessToken,
       state: type,
       page: page,
       code: codeSearch,
       value: valueSearch,
+      x_is_return: true,
     })
       .then(res => {
         // console.log(JSON.stringify(res.data, null, 2));
@@ -83,23 +84,12 @@ const ContentBody = ({type}) => {
         setIsLoadData(false);
         setRefreshing(false);
         setIsLoadMore(false);
-        console.log('err getOrder', err);
+        console.log('Err getOrder', err);
       });
   };
-
-  const onPress = item => {
-    navigation.navigate('NoFooter', {
-      screen: 'DetailOrderScreen',
-      params: {
-        id: item.id,
-        accessToken: accessToken,
-      },
-    });
-  };
-
   const loadMore = () => {
     if (isLoadMore) {
-      getOrder({
+      getExchange({
         codeSearch: code,
         valueSearch: value,
         page: nextPage,
@@ -117,7 +107,7 @@ const ContentBody = ({type}) => {
   const RefreshOrder = () => {
     setRefreshing(true);
     setIsLoadData(true);
-    getOrder({page: 1, loadMore: false});
+    getExchange({page: 1, loadMore: false});
     setValue('');
     setCode('');
   };
@@ -126,7 +116,7 @@ const ContentBody = ({type}) => {
     setCode(item.code);
     setValue(textSearch);
     setIsLoadData(true);
-    getOrder({
+    getExchange({
       codeSearch: item.code,
       valueSearch: textSearch,
       loadMore: false,
@@ -134,50 +124,15 @@ const ContentBody = ({type}) => {
     });
   };
 
-  const _renderItem = ({item, index}) => {
-    return (
-      <TouchableOpacity onPress={() => onPress(item)}>
-        <View style={styles.touchOpacity}>
-          <View style={styles.viewIcon}>
-            <View style={styles.viewBorder}>
-              <IconSell
-                color={
-                  (item.state.key === 'done' || item.state.key === 'sale') &&
-                  item?.x_delivery_status?.key === 'delivered'
-                    ? Colors.MANTIS
-                    : item.state.key === 'cancel'
-                    ? Colors.SILVER
-                    : Colors.MONZA
-                }
-              />
-            </View>
-          </View>
-          <View style={styles.viewText}>
-            <View style={styles.stateContain}>
-              <View style={styles.viewState(item?.state?.key)}>
-                <Text numberOfLines={1} style={styles.textTT}>
-                  {item?.state?.name}
-                </Text>
-              </View>
-              <View style={styles.viewState(item?.x_delivery_status?.key)}>
-                <Text numberOfLines={1} style={styles.textTT}>
-                  {item?.x_delivery_status?.name}
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.title} numberOfLines={1}>
-              {item.name} - {item.partner}
-            </Text>
-            <Text style={styles.text} numberOfLines={1}>
-              {t('date')}: {moment(item.date_order).format(VN_FORMAT_DATETIME)}
-            </Text>
-            <Text style={styles.text} numberOfLines={1}>
-              {t('total')}: {num2numDong(item.amount_total)}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
+  const onPress = item => {
+    navigation.navigate('NoFooter', {
+      screen: 'DetailExchangeScreen',
+      params: {
+        id: item.id,
+        name: item.name,
+        accessToken: accessToken,
+      },
+    });
   };
 
   const _renderHeader = () => {
@@ -192,6 +147,7 @@ const ContentBody = ({type}) => {
       />
     );
   };
+
   const renderSeparator = () => (
     <View style={styles.line}>
       <SvgDashLine
@@ -204,6 +160,52 @@ const ContentBody = ({type}) => {
       <SvgDashLine color={Colors.GRAYCHATEAU} width={'100%'} />
     </View>
   );
+
+  const _renderItem = ({item, index}) => {
+    return (
+      <TouchableOpacity onPress={() => onPress(item)}>
+        <View style={styles.touchOpacity}>
+          <View style={styles.viewIcon}>
+            <View style={styles.viewBoder}>
+              <IconSell
+                color={
+                  item.state.key === 'done' || item.state.key === 'sale'
+                    ? Colors.MANTIS
+                    : item.state.key === 'cancel'
+                    ? Colors.SILVER
+                    : Colors.MONZA
+                }
+              />
+            </View>
+          </View>
+          <View style={styles.viewText}>
+            <View style={styles.stateContain}>
+              <View style={styles.viewState(item?.x_state_return?.key)}>
+                <Text numberOfLines={1} style={styles.textTT}>
+                  {item?.state?.name}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.title} numberOfLines={1}>
+              {item.name} - {item.partner}
+            </Text>
+            <Text style={styles.text} numberOfLines={1}>
+              NVKD: {item.user_id}
+            </Text>
+            <Text style={styles.text} numberOfLines={1}>
+              {t('date_order')}:{' '}
+              {moment(item.date_order).format(VN_FORMAT_DATETIME)}
+            </Text>
+            <Text style={styles.text} numberOfLines={1}>
+              {t('amount_total_return')}:{' '}
+              {num2numDong(item.amount_total_return)}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View>
       {_renderHeader()}
@@ -262,19 +264,24 @@ const styles = StyleSheet.create({
     marginRight: normalize(10),
     borderRadius: normalize(5),
     backgroundColor:
-      key === 'done' || key === 'sale' || key === 'delivered'
+      key === 'done' || key === 'sale'
         ? Colors.MANTIS
-        : key === 'cancel' || key === 'no'
+        : key === 'cancel'
         ? Colors.SILVER
         : Colors.MONZA,
 
     flex: 1,
   }),
+  viewStateRTransfer: key => ({
+    backgroundColor: key === 'transfered' ? Colors.MANTIS : Colors.MONZA,
+    flex: 1,
+    borderRadius: 5,
+  }),
   viewIcon: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  viewBorder: {
+  viewBoder: {
     padding: 10,
     justifyContent: 'center',
     alignItems: 'center',

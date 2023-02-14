@@ -9,9 +9,8 @@ import ContentBody from '@components/Application/Sales/ContentBody';
 const tabs = [
   {name: 'Tất cả', key: '', sequence: 0},
   {name: 'Báo giá', key: 'draft', sequence: 1},
-  {name: 'Báo giá đã gửi', key: 'sent', sequence: 2},
   {name: 'Đơn bán hàng', key: 'sale', sequence: 3},
-  {name: 'Đã khóa', key: 'done', sequence: 4},
+  {key: 'not_delivery', name: 'Chưa xuất hàng', sequence: 4},
   {name: 'Đã hủy', key: 'cancel', sequence: 5},
 ];
 
@@ -23,9 +22,7 @@ export default function OrderListScreen({navigation}) {
   return (
     <Container>
       <HeaderStatusBar title={'Bán hàng'} hasBackgroundColor={false} />
-      <Tabs
-        renderTabBar={() => <ScrollableTab {...scrollTabStyles} />}
-        locked={true}>
+      <Tabs renderTabBar={() => <ScrollableTab {...scrollTabStyles} />}>
         {tabs.map(tab => {
           return (
             <Tab heading={tab.name} key={tab.sequence} {...tabStyles}>

@@ -19,7 +19,7 @@ export default function DetailProduct({route}) {
   useEffect(() => {
     onGetDetailProduct({access_token: accessToken, id: id})
       .then(res => {
-        console.log(JSON.stringify(res.data, null, 2));
+        // console.log(JSON.stringify(res.data, null, 2));
         setDataDetail(res.data);
         setIsLoading(false);
       })
@@ -45,7 +45,7 @@ export default function DetailProduct({route}) {
             </View>
             <View style={styles.viewTxt}>
               <Text style={styles.txt(true)}>
-                [{dataDetail?.default_code}] {dataDetail?.name} -
+                [{dataDetail?.default_code}] {dataDetail?.name} -{' '}
                 {dataDetail?.uom_name}
               </Text>
               <Text style={styles.txt(false)}>

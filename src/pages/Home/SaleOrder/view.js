@@ -24,7 +24,6 @@ import {LocalizationContext} from '@context/index';
 import {num2numDong, showMessage} from '@utils/index';
 import PlaceholderScreen from '@components/loadings/PlaceholderScreen';
 import ModalPromotions from '@components/modal/ModalPromotions';
-// import ModalApprove from '@components/modal/ModalApprove';
 import ItemProduct from '@components/Application/Sales/ItemProduct';
 import ItemSeparator from '@components/Application/Sales/ItemSeparator';
 import {setOrderLine} from '@redux/actions/dataAction';
@@ -93,7 +92,7 @@ export default function DetailOrderScreen({route}) {
       id: id,
     })
       .then(res => {
-        // console.log(JSON.stringify(res?.x_promotion_ids, null, 2));
+        // console.log(JSON.stringify(res, null, 2));
         setDetail(res);
         setAmountUntaxed(res?.amount_untaxed);
         setAmountTax(res?.amount_tax);
@@ -228,6 +227,10 @@ export default function DetailOrderScreen({route}) {
               value={detail?.partner_shipping_id?.name}
             />
             <LineItem
+              title={'Số điện thoại'}
+              value={detail?.phone || detail?.mobile}
+            />
+            <LineItem
               title={'Ngày đặt hàng'}
               value={moment(detail?.date_order).format(VN_FORMAT_DATE)}
             />
@@ -235,6 +238,26 @@ export default function DetailOrderScreen({route}) {
             <LineItem
               title={'Các điều khoản thanh toán'}
               value={detail?.payment_term_id?.name}
+            />
+            <LineItem
+              title={'Trạng thái giao hàng'}
+              value={
+                detail?.x_delivery_status === 'delivering'
+                  ? 'Đang giao hàng'
+                  : detail?.x_delivery_status === 'partial_delivered'
+                  ? 'Giao hàng 1 phần'
+                  : detail?.x_delivery_status === 'delivered'
+                  ? 'Đã giao hàng'
+                  : detail?.x_delivery_status === 'unsuccessful'
+                  ? 'Không thành công'
+                  : detail?.x_delivery_status === 'unknown'
+                  ? 'Không xác định'
+                  : detail?.x_delivery_status === 'to_delivery'
+                  ? 'Chờ xuất hàng'
+                  : detail?.x_delivery_status === 'not_delivery'
+                  ? 'Chưa xuất hàng'
+                  : 'Không có gì để xuất hàng'
+              }
             />
             <LineItem title={'Kho'} value={detail?.warehouse_id?.name} />
             <LineItem title={'Kênh'} value={detail?.x_channel_id?.name} />

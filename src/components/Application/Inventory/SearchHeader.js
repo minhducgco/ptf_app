@@ -21,7 +21,8 @@ export default function SearchHeader({
   textSearch,
   setTextSearch,
   onSearch,
-  isChooseType,
+  isChooseType = false,
+  hasSelectedQuantity = true,
 }) {
   const inputRef = useRef(null);
   const filterProduct = [
@@ -116,7 +117,9 @@ export default function SearchHeader({
             )}
           </View>
         </Item>
-        <Text style={styles.txtTotal}>Đã chọn: {selectedQuantity}</Text>
+        {hasSelectedQuantity && (
+          <Text style={styles.txtTotal}>Đã chọn: {selectedQuantity}</Text>
+        )}
       </View>
     </View>
   );

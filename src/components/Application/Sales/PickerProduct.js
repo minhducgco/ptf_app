@@ -1,27 +1,21 @@
-import React, {useState, useContext, useRef} from 'react';
+import React, {useContext, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Icon, Item, Label, Text} from 'native-base';
 
 import theme from '@styles/theme.style';
 import {LocalizationContext} from '@context/index';
-import ModalPickProduct from './ModalPickProduct';
 
 function PickerProduct({
   title = '',
   data = [],
   name = '',
-  setValue,
+  onChangeProduct,
   disabled = false,
   required,
   partnerId,
 }) {
   const inputRef = useRef(null);
   const {t} = useContext(LocalizationContext);
-  const [isOpen, setIsOpen] = useState(false);
-
-  const onShowPicker = () => {
-    setIsOpen(true);
-  };
 
   return (
     <>
@@ -29,7 +23,7 @@ function PickerProduct({
         ref={inputRef}
         disabled={disabled}
         style={styles.menuBox}
-        onPress={onShowPicker}>
+        onPress={onChangeProduct}>
         <Label style={styles.title}>
           {t(title)}
           {required && <Text style={styles.requiredText}> *</Text>}:
@@ -39,12 +33,6 @@ function PickerProduct({
         </View>
         <Icon name={'chevron-small-down'} type="Entypo" />
       </Item>
-      <ModalPickProduct
-        modalVisible={isOpen}
-        setModalVisible={setIsOpen}
-        setValue={setValue}
-        partnerId={partnerId}
-      />
     </>
   );
 }

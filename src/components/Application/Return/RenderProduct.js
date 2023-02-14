@@ -1,4 +1,5 @@
-import React, {memo, useState} from 'react';
+import React, {forwardRef, useImperativeHandle, useState} from 'react';
+import moment from 'moment';
 import {View, StyleSheet, TouchableOpacity} from 'react-native';
 import normalize from 'react-native-normalize';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -6,122 +7,154 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {num2numDong} from '@utils/';
 import Colors from '@styles/color';
 import themeStyle from '@styles/theme.style';
+import PickerDate from '@components/Application/Sales/PickerDate';
 import EditableItem from '@components/Application/Sales/EditableItem';
 import PickerProduct from '@components/Application/Sales/PickerProduct';
 import PickerComplain from '@components/Application/Sales/PickerComplain';
 
-const RenderProduct = ({
-  item,
-  index,
-  disabled,
-  type,
-  onDelete,
-  listOum,
-  products,
-  partnerId,
-  setProducts,
-}) => {
-  const [product, setProduct] = useState(item || {});
+const RenderProduct = (props, ref) => {
   const [qtyRequest, setQtyRequest] = useState(
-    item?.x_product_qty_request || item?.x_product_return_qty || 1,
+    props.item.product_uom_qty ||
+      props.item?.x_product_qty_request ||
+      props.item?.x_product_return_qty ||
+      1,
   );
-  const [unit, setUnit] = useState(item?.product_uom || item?.uom_id || {});
-  const [discount, setDiscount] = useState(item?.discount || 0);
-  const [totalPrice, setTotalPrice] = useState(item?.price_subtotal || 0);
-  const [price, setPrice] = useState(item?.price_unit || 0);
+  const [unit, setUnit] = useState(
+    props.item?.product_uom || props.item?.uom_id || {},
+  );
+  const [discount, setDiscount] = useState(props.item?.discount || 0);
+  const [expirationDate, setExpirationDate] = useState(
+    props.item?.x_expiration_date
+      ?.slice(0, 10)
+      .split('-')
+      .reverse()
+      .join('/') || moment().format('DD/MM/YYYY'),
+  );
 
-  const onChangeProduct = it => {
-    setProduct(it);
-    setPrice(it.price_unit);
-    setUnit(it.uom_id || {});
-    setTotalPrice(it.price_unit * qtyRequest * (1 - discount / 100));
-    products[index].id = it.id;
-    products[index].product_id = it.product_id;
-    products[index].product_name = it.name;
-    products[index].price_unit = it.price_unit;
-    products[index].uom_id = it.uom_id;
-    products[index].price_subtotal =
-      qtyRequest * it.price_unit * (1 - discount / 100);
+  const onEditProduct = () => {
+    props.setIsEditProduct(true);
   };
+
+  useImperativeHandle(ref, () => ({
+    onUpdateProduct(data) {
+      setUnit(data.uom_id);
+      props.products[props.index] = data;
+      props.products[props.index].id = data.product_id;
+      props.products[props.index].x_factor_str = data.x_factor_str;
+      props.products[props.index].default_code = data.default_code;
+      props.products[props.index].product_id = data.product_id;
+      props.products[props.index].name = data.name;
+      props.products[props.index].price_unit = data.price_unit;
+      props.products[props.index].uom_id = data.uom_id;
+      props.products[props.index].x_expiration_date = expirationDate;
+      props.products[props.index].x_product_return_qty = qtyRequest;
+      props.products[props.index].price_subtotal =
+        qtyRequest * data.price_unit * (1 - discount / 100);
+    },
+  }));
 
   const onChangeQtyRequest = num => {
     setQtyRequest(num);
-    setTotalPrice(num * price * (1 - discount / 100));
-    products[index].x_product_return_qty = num;
-    products[index].price_subtotal = num * price * (1 - discount / 100);
+    props.products[props.index].x_product_return_qty = num;
+    props.products[props.index].price_subtotal =
+      num * props.item?.price_unit * (1 - discount / 100);
+  };
+
+  const onEditDate = date => {
+    setExpirationDate(date);
+    props.products[props.index].x_expiration_date = date;
   };
 
   const onChangeDiscount = num => {
     setDiscount(num);
-    setTotalPrice(qtyRequest * price * (1 - num / 100));
-    products[index].discount = num;
-    products[index].price_subtotal = qtyRequest * price * (1 - num / 100);
+    props.products[props.index].discount = num;
+    props.products[props.index].price_subtotal =
+      qtyRequest * props.item?.price_unit * (1 - num / 100);
   };
 
   const onChangeUnit = oum => {
     setUnit(oum);
-    products[index].product_uom = oum;
+    props.products[props.index].product_uom = oum;
   };
 
   return (
-    <View style={styles.itemProduct}>
+    <View style={styles.itemProduct} key={props.index}>
       <View style={styles.viewItem}>
         <PickerProduct
           title={'product'}
-          data={products}
-          name={product.name}
-          setValue={onChangeProduct}
+          data={props.products}
+          name={props.item.name}
+          onChangeProduct={onEditProduct}
           required
-          partnerId={partnerId}
-          disabled={disabled}
+          disabled={props.disabled}
         />
         <EditableItem
-          title={'expiration_date'}
-          defaultValue={'20/12/1999'}
+          title={'specifications'}
+          defaultValue={props.item.x_factor_str}
           disabled={true}
+        />
+        <PickerDate
+          title="expiration_date"
+          value={expirationDate}
+          setValue={onEditDate}
+          disabled={props.disabled}
         />
         <EditableItem
           title={'qty_return'}
           defaultValue={qtyRequest.toString()}
           setValue={onChangeQtyRequest}
           keyboardType={'numeric'}
-          disabled={disabled}
+          disabled={props.disabled}
           required
         />
         <PickerComplain
           title={'unit'}
-          data={listOum}
+          data={props.listOum}
           name={unit?.name || ''}
           setValue={onChangeUnit}
           disabled={true}
         />
         <EditableItem
           title={'unit_price'}
-          defaultValue={num2numDong(item?.price_unit || 0)}
+          defaultValue={num2numDong(props.item?.price_unit || 0)}
           disabled={true}
         />
-        <EditableItem
-          title={'discount'}
-          defaultValue={item?.discount?.toString() || '0'}
-          setValue={onChangeDiscount}
-          keyboardType={'numeric'}
-          disabled={disabled}
-        />
+        {props.have_discount && (
+          <EditableItem
+            title={'discount'}
+            defaultValue={props.item?.discount?.toString() || '0'}
+            setValue={onChangeDiscount}
+            keyboardType={'numeric'}
+            disabled={props.disabled}
+          />
+        )}
+        {props.have_tax && (
+          <EditableItem
+            title={'tax'}
+            defaultValue={props.item?.tax_id[0].name || ''}
+            setValue={onChangeDiscount}
+            keyboardType={'numeric'}
+            disabled={props.disabled}
+          />
+        )}
         <EditableItem
           title={'total_price'}
-          defaultValue={num2numDong(totalPrice)}
+          defaultValue={num2numDong(props.item?.price_subtotal)}
           disabled={true}
         />
         <View style={styles.header}>
           <View style={styles.buttonDelete}>
-            {item?.x_is_product_promotion && item?.price_unit <= 0 ? (
+            {props.item?.x_is_product_promotion &&
+            props.item?.price_unit <= 0 ? (
               <AntDesign name="gift" size={20} />
             ) : (
               <AntDesign name="shoppingcart" size={20} />
             )}
           </View>
           <View style={styles.buttonDelete}>
-            <TouchableOpacity onPress={() => onDelete(index)}>
+            <TouchableOpacity
+              onPress={() => props.onDelete(props.index)}
+              disabled={props.disabled}>
               <AntDesign name="closecircleo" size={20} />
             </TouchableOpacity>
           </View>
@@ -131,7 +164,7 @@ const RenderProduct = ({
   );
 };
 
-export default memo(RenderProduct);
+export default forwardRef(RenderProduct);
 
 const styles = StyleSheet.create({
   itemProduct: {

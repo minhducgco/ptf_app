@@ -1,7 +1,7 @@
 import React from 'react';
-import {Image} from 'react-native';
+import {Image, ScrollView} from 'react-native';
 import Modal from 'react-native-modalbox';
-import {Container, Content} from 'native-base';
+import {Container} from 'native-base';
 import {
   responsiveHeight,
   responsiveWidth,
@@ -28,15 +28,21 @@ export default function ModalViewImg({visible, setVisible, data}) {
         paddingBottom: normalize(20),
       }}>
       <Container>
-        <Content padder>
+        <ScrollView padder>
           <Image
             resizeMode={'contain'}
             style={{height: responsiveHeight(50)}}
-            source={{
-              uri: `data:application/pdf;base64,${data?.value}`,
-            }}
+            source={
+              data?.url
+                ? {
+                    uri: data?.url,
+                  }
+                : {
+                    uri: `data:application/pdf;base64,${data?.value}`,
+                  }
+            }
           />
-        </Content>
+        </ScrollView>
       </Container>
     </Modal>
   );

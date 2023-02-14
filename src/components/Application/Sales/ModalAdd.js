@@ -6,7 +6,7 @@ import {ListItem, Icon, Left, Right, Text, Container} from 'native-base';
 
 import Colors from '@styles/color';
 import theme from '@styles/theme.style';
-import SearchHeader from './SearchHeader';
+import SearchHeader from '../Inventory/SearchHeader';
 import ButtonForms from '@components/Forms/ButtonForms';
 
 const ModalAdd = ({
@@ -30,7 +30,9 @@ const ModalAdd = ({
   useEffect(() => {
     if (listSelected.length > 0) {
       const newList = listItem.map(item => {
-        if (listSelected.findIndex(it => it.id === item.id) >= 0) {
+        if (
+          listSelected.findIndex(it => it.product_id === item.product_id) >= 0
+        ) {
           return {
             ...item,
             active: true,
@@ -44,13 +46,13 @@ const ModalAdd = ({
       });
       setListEmployeeFormat(newList);
       setListEmployeeFilter(newList);
-      // setReloadList(false);
+      setReloadList(false);
     } else {
       setListEmployeeFilter(listItem);
       setListEmployeeFormat(listItem);
-      // setReloadList(false);
+      setReloadList(false);
     }
-  }, [listItem, listSelected]);
+  }, [listItem, listSelected, setReloadList, reloadList]);
 
   const addEmp = item => {
     addItem(item);

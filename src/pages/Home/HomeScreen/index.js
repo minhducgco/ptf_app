@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {
   View,
   Image,
@@ -8,23 +8,18 @@ import {
   Platform,
   Dimensions,
   SafeAreaView,
-  RefreshControl,
   TouchableOpacity,
 } from 'react-native';
+import {Container} from 'native-base';
 import {useSelector} from 'react-redux';
 import FastImage from 'react-native-fast-image';
 import normalize from 'react-native-normalize';
-import {Container, Content} from 'native-base';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
-import {applicationStyles} from '@styles/application.style';
-import {
-  IconSetting,
-  // , IconEmptyData
-} from '@assets/svg/icons/index';
 
 import Colors from '@styles/color';
 import {MAIN_DOMAIN} from '@configs/Configs';
+import {IconSetting} from '@assets/svg/icons/index';
+import {applicationStyles} from '@styles/application.style';
 
 const {height, width} = Dimensions.get('window');
 const menuSale = [
@@ -64,12 +59,20 @@ const menuSale = [
     parent: 'NoFooter',
     name: 'Sản phẩm',
   },
+  {
+    id: 5,
+    key: 'exchange',
+    icon: 'clipboard-flow-outline',
+    type: 'MaterialCommunityIcons',
+    navigation: 'Product',
+    parent: 'NoFooter',
+    name: 'Đổi hàng',
+  },
 ];
 
 const Application = ({navigation}) => {
   const user = useSelector(state => state.auth.user);
   const imgDefault = require('@assets/images/ava.jpg');
-  const [refreshing, setRefreshing] = useState(false);
 
   const _navigationScreen = item => {
     if (item.key === 'sale') {
@@ -96,6 +99,12 @@ const Application = ({navigation}) => {
         params: {},
       });
     }
+    if (item.key === 'exchange') {
+      navigation.navigate('NoFooter', {
+        screen: 'ExchangeListScreen',
+        params: {},
+      });
+    }
   };
 
   const _onGoToSetting = () => {
@@ -107,59 +116,48 @@ const Application = ({navigation}) => {
 
   const _onGoToProfile = () => {};
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    setRefreshing(false);
-  };
-
   const _renderMainMenu = (item, index) => {
     return (
-      <TouchableOpacity
-        key={index}
-        activeOpacity={0.5}
-        onPress={() => _navigationScreen(item.item)}
-        disabled={item.key === 'additional_key'}
-        style={[styles.itemContainer]}>
-        <View
-          style={[
-            styles.itemButton,
-            {
-              backgroundColor: Colors.ALABASTER,
-            },
-          ]}>
-          <MaterialCommunityIcons name={item.item.icon} style={styles.icon} />
+      <View>
+        <TouchableOpacity
+          key={index}
+          activeOpacity={0.5}
+          onPress={() => _navigationScreen(item.item)}
+          disabled={item.key === 'additional_key'}
+          style={styles.itemContainer}>
           <View
             style={[
+              styles.itemButton,
               {
-                height: height / 20,
-                width: width / 6,
+                backgroundColor: Colors.ALABASTER,
               },
-              styles.viewIconFavorite,
             ]}>
-            <Text
-              key={item.item.id}
-              style={styles.itemText}
-              allowFontScaling={false}>
-              {item.item.name}
-            </Text>
+            <MaterialCommunityIcons name={item.item.icon} style={styles.icon} />
+            <View
+              style={[
+                {
+                  height: height / 20,
+                  width: width / 6,
+                },
+                styles.viewIconFavorite,
+              ]}>
+              <Text
+                key={item.item.id}
+                style={styles.itemText}
+                allowFontScaling={false}>
+                {item.item.name}
+              </Text>
+            </View>
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 
   return (
     <Container>
       <SafeAreaView style={styles.flx_1}>
-        <Content
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[Colors.MONZA]}
-            />
-          }
-          contentContainerStyle={styles.content}>
+        <View style={styles.content}>
           <View style={styles.viewHeader}>
             <View style={styles.viewSetting}>
               <TouchableOpacity
@@ -191,7 +189,7 @@ const Application = ({navigation}) => {
               <Text style={styles.informationTxt}>
                 Xin chào! {user?.employee_id?.name || user?.user_id?.name}
               </Text>
-              <Text style={styles.helpTxt}>Bạn có cần giúp đỡ gì không?</Text>
+              {/* <Text style={styles.helpTxt}>Bạn có cần giúp đỡ gì không?</Text> */}
             </View>
           </View>
           <View style={{marginTop: normalize(30, 'height')}}>
@@ -202,12 +200,13 @@ const Application = ({navigation}) => {
             </View>
             <FlatList
               data={menuSale}
-              horizontal={true}
+              bounces={false}
               renderItem={_renderMainMenu}
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item, index) => index.toString()}
               contentContainerStyle={styles.columnWrapperStyle}
-              // numColumns={2}
+              numColumns={3}
+              key={3}
             />
           </View>
           {/* <View style={styles.favoriteContainer}>
@@ -216,7 +215,7 @@ const Application = ({navigation}) => {
           <View style={styles.empty}>
             <IconEmptyData />
           </View> */}
-        </Content>
+        </View>
       </SafeAreaView>
       <View
         style={[
@@ -242,7 +241,6 @@ const styles = StyleSheet.create({
   ...applicationStyles,
   itemContainer: {
     borderRadius: 20,
-    // flex: 1,
     justifyContent: 'center',
     alignContent: 'center',
   },
@@ -250,7 +248,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    width: (width / 10) * 2,
+    width: (width / 10) * 2.5,
     height: normalize(Platform.OS === 'android' ? 85 : 75, 'height'),
     marginHorizontal: normalize(Platform.OS === 'android' ? 10 : 5, 'width'),
     marginVertical: normalize(Platform.OS === 'android' ? 10 : 5, 'height'),

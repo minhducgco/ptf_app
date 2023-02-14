@@ -16,6 +16,7 @@ const FilterForm = ({
   disabled = false,
   textSearch,
   setTextSearch,
+  listOrder = false,
 }) => {
   const inputRef = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -79,7 +80,13 @@ const FilterForm = ({
         onDismiss={onDismiss}
         anchor={{x: location.x, y: location.y}}
         // eslint-disable-next-line react-native/no-inline-styles
-        style={{marginTop: normalize(15, 'height'), width: '80%'}}>
+        style={{
+          marginTop:
+            listOrder === true
+              ? normalize(100, 'height')
+              : normalize(15, 'height'),
+          width: '80%',
+        }}>
         <FlatList
           data={data}
           keyExtractor={(item, index) => index.toString()}

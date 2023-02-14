@@ -13,6 +13,10 @@ import DetailOrderScreen from '@pages/Home/SaleOrder/view';
 import CreateNewOrder from '@pages/Home/SaleOrder/create';
 /*-----------------------------    Inventory   -------------------------------------------- */
 import Inventory from '@pages/Home/Inventory/index';
+/*-----------------------------    Exchange    -------------------------------------------- */
+import ExchangeListScreen from '@pages/Home/Exchange/index';
+import DetailExchangeScreen from '@pages/Home/Exchange/view';
+import CreateNewExchange from '@pages/Home/Exchange/create';
 /*-----------------------------    Product     -------------------------------------------- */
 import Product from '@pages/Home/Products/index';
 import DetailProduct from '@pages/Home/Products/DetailProduct';
@@ -40,6 +44,12 @@ function NoFooterStack() {
       <Stack.Screen name="ReturnListScreen" component={ReturnListScreen} />
       <Stack.Screen name="DetailReturnScreen" component={DetailReturnScreen} />
       <Stack.Screen name="CreateNewReturn" component={CreateNewReturn} />
+      <Stack.Screen name="ExchangeListScreen" component={ExchangeListScreen} />
+      <Stack.Screen
+        name="DetailExchangeScreen"
+        component={DetailExchangeScreen}
+      />
+      <Stack.Screen name="CreateNewExchange" component={CreateNewExchange} />
     </Stack.Navigator>
   );
 }

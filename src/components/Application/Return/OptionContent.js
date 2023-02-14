@@ -7,12 +7,14 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  PermissionsAndroid,
 } from 'react-native';
+import moment from 'moment';
 import {useSelector} from 'react-redux';
 import normalize from 'react-native-normalize';
-import {Form, Content, Container} from 'native-base';
+import {Form, Container} from 'native-base';
 import Icon from 'react-native-vector-icons/AntDesign';
-import {launchImageLibrary} from 'react-native-image-picker';
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 
 import color from '@styles/color';
@@ -36,16 +38,21 @@ import {
   getListBranches,
   getListChannels,
   getListWarehouses,
+  onGetDetailOrder,
 } from '@repository/Sales/Sales';
 import ItemSeparator from '@components/Application/Sales/ItemSeparator';
 import RenderProduct from '@components/Application/Return/RenderProduct';
 import {AddButton} from '@components/Application/Sales/AddButton';
-import ModalAdd from '@components/Application/Inventory/ModalAdd';
+import ModalAdd from '@components/Application/Sales/ModalAdd';
 import FileSelected from '@components/Application/Return/FileSelected';
+import ModalEditProduct from '@components/Application/Sales/ModalEditProduct';
+import ModalChooseSaleOrder from './ModalChooseSaleOrder';
+import PickerProduct from '@components/Application/Sales/PickerProduct';
 
 export default function OptionContent(props) {
   const {t} = useContext(LocalizationContext);
   const scrollRef = useRef(null);
+  const childCompRef = useRef();
   const navigation = useNavigation();
   const accessToken = useSelector(st => st.auth.accessToken);
   const WIDTH = Dimensions.get('screen').width;
@@ -61,16 +68,14 @@ export default function OptionContent(props) {
   const [openModalProduct, setOpenModalProduct] = useState(false);
   const [isLoadData, setIsLoadData] = useState(false);
   const [listProduct, setListProduct] = useState([]);
-
+  const [reloadList, setReloadList] = useState(false);
+  const [isEditProduct, setIsEditProduct] = useState(false);
+  const [isEditSaleOrder, setIsEditSaleOrder] = useState(false);
   const [tab, setTab] = useState([
     {key: 'detail', active: true, id: 0, name: 'Chi tiết đơn hàng'},
     {key: 'file', active: false, id: 1, name: 'Tệp đính kèm'},
     {key: 'other', active: false, id: 2, name: 'Thông tin khác'},
   ]);
-  // const listPickingPolicy = [
-  //   {key: 'direct', name: 'Càng sớm càng tốt'},
-  //   {key: 'one', name: 'Khi tất cả sản phẩm đã sẵn dùng'},
-  // ];
 
   useFocusEffect(
     React.useCallback(() => {
@@ -209,38 +214,41 @@ export default function OptionContent(props) {
       });
   }, [accessToken]);
 
-  const _getProducts = async partnerId => {
-    setIsLoadData(true);
-    await getProducts({
-      accessToken: accessToken,
-      items_per_page: 100000,
-      partnerId: partnerId,
-    })
-      .then(res => {
-        // console.log(JSON.stringify(res.data, null, 2));
-        setListProduct(
-          res.data.map(item => ({
-            name: item.name,
-            product_id: item.product_id,
-            uom_id: item.uom_id,
-            id: item.product_id,
-            tax_id: item.tax_id,
-            default_code: item.default_code,
-            price_unit: item.price_unit,
-            price_subtotal: item.price_unit,
-            x_product_qty_request: 1,
-            active: false,
-          })),
-        );
-        setIsLoadData(false);
+  useEffect(() => {
+    props.partner.id &&
+      getProducts({
+        accessToken: accessToken,
+        items_per_page: 100000,
+        partnerId: props.partner.id,
       })
-      .catch(err => {
-        setIsLoadData(false);
-        if (__DEV__) {
-          console.log('getProducts: ', err);
-        }
-      });
-  };
+        .then(res => {
+          // console.log(JSON.stringify(res.data, null, 2));
+          setListProduct(
+            res.data.map(item => ({
+              name: item.name,
+              x_factor_str: item.x_factor_str,
+              product_id: item.product_id,
+              uom_id: item.uom_id,
+              id: item.product_id,
+              tax_id: item.tax_id,
+              default_code: item.default_code,
+              price_unit: item.price_unit,
+              price_subtotal: item.price_unit,
+              x_product_qty_request: 1,
+              active: false,
+              x_product_return_qty: 1,
+              x_expiration_date: moment().format('DD/MM/YYYY'),
+            })),
+          );
+          setIsLoadData(false);
+        })
+        .catch(err => {
+          setIsLoadData(false);
+          if (__DEV__) {
+            console.log('getProducts: ', err);
+          }
+        });
+  }, [accessToken, props.partner.id]);
 
   const onHandleActon = item => {
     switch (item.key) {
@@ -253,6 +261,7 @@ export default function OptionContent(props) {
           !props.warehouse.id === undefined
         ) {
           showMessage('Thông tin nhập bị thiếu');
+        } else {
           props._onUpdate();
         }
         break;
@@ -281,24 +290,11 @@ export default function OptionContent(props) {
     props.setChannel(item.x_channel_group_id);
     props.setPaymentTerm(item.payment_term_id);
     props.setOrderDetails([]);
-    _getProducts(item.id);
   };
-
-  // const _openModalEdit = (index, item) => {
-  //   setIsOpenModal(true);
-  //   setButtons(ButtonsEditCancel);
-  //   setIndexLines(index);
-  //   setItemRegis(item);
-  // };
 
   const _onCloseModal = () => {
     setOpenModalProduct(false);
   };
-
-  // const _openModalCreate = async () => {
-  //   setIsOpenModal(true);
-  //   setItemRegis({});
-  // };
 
   const onGetImageLibrary = () => {
     const options = {
@@ -328,6 +324,47 @@ export default function OptionContent(props) {
         props.setListAddFile(newArray);
       }
     });
+  };
+
+  const requestCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        let options = {
+          storageOptions: {
+            skipBackup: true,
+            path: 'images',
+          },
+          maxWidth: 1024,
+          maxHeight: 1024,
+          includeBase64: true,
+        };
+        launchCamera(options, res => {
+          if (res.didCancel) {
+            showMessage('User cancelled image picker');
+          } else if (res.error) {
+            showMessage('Image picker', res.error);
+          } else if (res.customButton) {
+            showMessage('User tapped custom button', res.customButton);
+          } else {
+            let name = res.assets[0].fileName.split('.jpg');
+            let newArray = [...props.listAddFile];
+            const source = {
+              name: name[0] + '.jpg',
+              value: res.assets[0].base64,
+            };
+            newArray.push(source);
+            props.setListAddFile(newArray);
+          }
+        });
+      } else {
+        showMessage('Camera permission denied');
+      }
+    } catch (err) {
+      showMessage(err);
+    }
   };
 
   const onRemoveFile = ind => {
@@ -361,16 +398,69 @@ export default function OptionContent(props) {
     props.setOrderDetails(newList);
   };
 
+  const onChangeProduct = it => {
+    childCompRef.current.onUpdateProduct(it);
+    setReloadList(true);
+  };
+
+  const onEditSaleOrder = it => {
+    setIsEditSaleOrder(true);
+  };
+
+  const onChangeSaleOrder = it => {
+    props.setSaleOrder(it);
+    onGetDetailOrder({
+      accessToken: accessToken,
+      id: it.id,
+    })
+      .then(res => {
+        console.log(JSON.stringify(res, null, 2));
+        props.setPartner(res.partner);
+        props.setPhone(res.phone);
+        props.setPriceList(res.pricelist_id);
+        props.setChannel(res.x_channel_id);
+        props.setOrderDetails(
+          res.order_line.map(item => ({
+            name: item.name,
+            x_factor_str: item.x_factor_str,
+            x_expiration_date: item.x_expiration_date
+              .slice(0, 10)
+              .split('-')
+              .reverse()
+              .join('/'),
+            product_id: item.product_id,
+            uom_id: item.uom_id,
+            product_oum: item.product_oum,
+            id: item.product_id,
+            tax_id: item.tax_id,
+            default_code: item.default_code,
+            price_unit: item.price_unit,
+            price_subtotal: item.price_unit,
+            x_product_qty_request: item.product_uom_qty,
+            x_product_return_qty: item.product_uom_qty,
+            product_uom_qty: item.product_uom_qty,
+            active: true,
+          })),
+        );
+      })
+      .catch(err => {
+        showMessage(err);
+      });
+  };
+
   const renderProduct = ({item, index}) => (
     <RenderProduct
       index={index}
       item={item}
+      have_discount={true}
       listOum={listOum}
+      ref={childCompRef}
       listTaxes={listTaxes}
       products={props.orderDetails}
       partnerId={props.partner.id || 0}
       setProducts={props.setOrderDetails}
       onDelete={onDeleteProduct}
+      setIsEditProduct={setIsEditProduct}
     />
   );
 
@@ -389,8 +479,21 @@ export default function OptionContent(props) {
         isLoadData={isLoadData}
         onClose={_onCloseModal}
         isChooseType={true}
+        reloadList={reloadList}
+        setReloadList={setReloadList}
       />
-      <Content showsVerticalScrollIndicator={false}>
+      <ModalEditProduct
+        visible={isEditProduct}
+        setVisible={setIsEditProduct}
+        partnerId={props.partner.id || 0}
+        onChangeProduct={onChangeProduct}
+      />
+      <ModalChooseSaleOrder
+        visible={isEditSaleOrder}
+        setVisible={setIsEditSaleOrder}
+        onChangeSaleOrder={onChangeSaleOrder}
+      />
+      <ScrollView showsVerticalScrollIndicator={false}>
         <Form>
           <Text style={styles.state}>{t(props.state)}</Text>
           <PickerPartner
@@ -406,17 +509,32 @@ export default function OptionContent(props) {
             setValue={props.setPhone}
             disabled={true}
           />
-          <PickerDate
-            title="date_order"
-            value={props?.dateOrder}
-            setValue={props.setDateOrder}
+          <PickerComplain
+            title={'type_return'}
+            data={listRepairType}
+            name={props?.typeReturn?.name || ''}
+            setValue={props.setTypeReturn}
             disabled={!props.isEdit}
+            required
+          />
+          <PickerProduct
+            title={'sale_order'}
+            data={props.saleOrder}
+            name={props.saleOrder.name}
+            onChangeProduct={onEditSaleOrder}
+            disabled={props.disabled}
           />
           <EditableItem
             title={'price_list'}
             defaultValue={props?.priceList}
             setValue={props.setPriceList}
             disabled={true}
+          />
+          <PickerDate
+            title="return_date"
+            value={props?.expirationDate}
+            setValue={props.setExpirationDate}
+            disabled={!props.isEdit}
           />
           <PickerComplain
             title={'payment_term'}
@@ -426,14 +544,6 @@ export default function OptionContent(props) {
             disabled={!props.isEdit}
           />
           <PickerComplain
-            title={'type_return'}
-            data={listRepairType}
-            name={props?.typeReturn?.name || ''}
-            setValue={props.setTypeReturn}
-            disabled={!props.isEdit}
-            required
-          />
-          <PickerComplain
             title={'channel'}
             data={listChannels}
             name={props?.chanel?.name || ''}
@@ -441,7 +551,7 @@ export default function OptionContent(props) {
             disabled={!props.isEdit}
           />
           <EditableItem
-            title={'note'}
+            title={'rules'}
             defaultValue={props?.note}
             setValue={props.setNote}
             multiline
@@ -483,9 +593,16 @@ export default function OptionContent(props) {
                 <Text style={styles.attached_files}>
                   {t('attached_files')}:
                 </Text>
-                <TouchableOpacity onPress={() => onGetImageLibrary()}>
-                  <Icon name="addfile" size={20} color={color.BLACK} />
-                </TouchableOpacity>
+                <View style={styles.attachedButton}>
+                  <TouchableOpacity
+                    style={styles.camerao}
+                    onPress={() => requestCameraPermission()}>
+                    <Icon name="camerao" size={24} color={color.BLACK} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => onGetImageLibrary()}>
+                    <Icon name="addfile" size={20} color={color.BLACK} />
+                  </TouchableOpacity>
+                </View>
               </View>
               <View style={styles.listAddFile}>
                 {props?.listAddFile?.map((it, ind) => (
@@ -529,7 +646,7 @@ export default function OptionContent(props) {
             </View>
           </ScrollView>
         </Form>
-      </Content>
+      </ScrollView>
       {props.isEdit && props.state === 'draft_2' ? (
         <ButtonForms data={ButtonSaveCancel} onAction={onHandleActon} />
       ) : props.isEdit && props.state === 'edit' ? (
@@ -556,6 +673,10 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 14,
   },
+  attachedButton: {
+    flexDirection: 'row',
+  },
+  camerao: {marginRight: normalize(30)},
   files: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -797,4 +797,12 @@
   "sent": "Báo giá đã gửi",
   "expiration_date": "Ngày hết hạn",
   "specifications": "Quy cách",
+  "amount_total_return": "Tông tiền hàng trả",
+  "exchange_warehouse": "Kho xuất hàng",
+  "return_warehouse": "Kho nhận hàng đổi",
+  "exchange_date": "Ngày đổi hàng",
+  "rules": "Điều khoản và điều kiện",
+  "delivery_status": "Trạng thái giao hàng",
+  "return_date": "Ngày trả hàng",
+  "sale_order": "Đơn bán hàng liên quan"
 }

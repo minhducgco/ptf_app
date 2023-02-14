@@ -33,10 +33,36 @@ const CreateNewReturn = ({route}) => {
     detail?.date_order.slice(0, 10).split('-').reverse().join('/') ||
       moment().format('DD/MM/YYYY'),
   );
+  const [expirationDate, setExpirationDate] = useState(
+    detail?.date_order.slice(0, 10).split('-').reverse().join('/') ||
+      moment().format('DD/MM/YYYY'),
+  );
   const [priceList, setPriceList] = useState(detail?.pricelist_id || '');
   const [paymentTerm, setPaymentTerm] = useState(detail?.payment_term_id || {});
   const [chanel, setChannel] = useState(detail?.x_channel_id || {});
-  const [orderDetails, setOrderDetails] = useState(detail?.order_line || []);
+  const [orderDetails, setOrderDetails] = useState(
+    detail?.order_line.map(item => ({
+      name: item.name,
+      x_factor_str: item.x_factor_str,
+      x_expiration_date: item.x_expiration_date
+        .slice(0, 10)
+        .split('-')
+        .reverse()
+        .join('/'),
+      product_id: item.product_id,
+      uom_id: item.uom_id,
+      product_oum: item.product_oum,
+      id: item.product_id,
+      tax_id: item.tax_id,
+      default_code: item.default_code,
+      price_unit: item.price_unit,
+      price_subtotal: item.price_unit,
+      x_product_qty_request: item.x_product_qty_request,
+      x_product_return_qty: item.x_product_return_qty,
+      product_uom_qty: item.product_uom_qty,
+      active: true,
+    })) || [],
+  );
   const [user, setUser] = useState(detail?.user_id || userLogin);
   const [team, setTeam] = useState(detail?.team_id || teamLogin);
   const [branch, setBranch] = useState(detail?.branch_id || branchLogin);
@@ -47,9 +73,12 @@ const CreateNewReturn = ({route}) => {
   const [commitmentDate, setCommitmentDate] = useState('');
   const [incoterm, setIncoterm] = useState(detail?.incoterm || {});
   const [typeReturn, setTypeReturn] = useState(detail?.x_type_return_id || {});
-  const [note, setNote] = useState('');
-  const [listAddFile, setListAddFile] = useState([]);
+  const [note, setNote] = useState(detail?.note || '');
+  const [listAddFile, setListAddFile] = useState(
+    detail?.x_sale_order_attach_ids || [],
+  );
   const [phone, setPhone] = useState(detail?.phone || '');
+  const [saleOrder, setSaleOrder] = useState(detail?.x_sale_order_id || {});
 
   const _onAction = async () => {
     let data = {
@@ -58,20 +87,28 @@ const CreateNewReturn = ({route}) => {
       partner_id: partner.id,
       warehouse_id: warehouse.id,
       branch_id: branch.id,
-      // validity_date: validityDate,
       team_id: team.id,
       x_channel_id: chanel.id,
-      date_order: dateOrder,
+      date_order: expirationDate,
       payment_term_id: paymentTerm.id,
       partner_invoice_id: partnerInvoice.id,
       partner_shipping_id: partnerShipping.id,
       incoterm: incoterm.id,
-      // picking_policy: pickingPolicy.key,
+      note: note,
       commitment_date: commitmentDate,
-      order_line: orderDetails,
+      order_line: orderDetails?.map(item => ({
+        ...item,
+        x_expiration_date:
+          item?.x_expiration_date?.split('/').reverse().join('-') +
+          ' ' +
+          moment().format('HH:mm:ss'),
+      })),
       x_is_return: true,
       x_type_return_id: typeReturn.id,
+      x_sale_order_attach_ids: listAddFile,
+      x_sale_order_id: saleOrder.id,
     };
+
     onCreateSaleOrder(data)
       .then(res => {
         showMessage('Tạo đơn trả hàng thành công!');
@@ -99,16 +136,25 @@ const CreateNewReturn = ({route}) => {
       // validity_date: validityDate,
       team_id: team.id,
       x_channel_id: chanel.id,
-      date_order: dateOrder,
+      date_order: expirationDate,
       payment_term_id: paymentTerm.id,
       partner_invoice_id: partnerInvoice.id,
       partner_shipping_id: partnerShipping.id,
       incoterm: incoterm.id,
+      note: note,
       // picking_policy: pickingPolicy.key,
       commitment_date: commitmentDate,
-      order_line: orderDetails,
+      order_line: orderDetails?.map(item => ({
+        ...item,
+        x_expiration_date:
+          item?.x_expiration_date?.split('/').reverse().join('-') +
+          ' ' +
+          moment().format('HH:mm:ss'),
+      })),
       x_is_return: true,
       x_type_return_id: typeReturn.id,
+      x_sale_order_attach_ids: listAddFile,
+      x_sale_order_id: saleOrder.id,
     };
     onUpdateSaleOrder(data)
       .then(res => {
@@ -171,6 +217,10 @@ const CreateNewReturn = ({route}) => {
         setListAddFile={setListAddFile}
         phone={phone}
         setPhone={setPhone}
+        expirationDate={expirationDate}
+        setExpirationDate={setExpirationDate}
+        saleOrder={saleOrder}
+        setSaleOrder={setSaleOrder}
       />
     </Container>
   );

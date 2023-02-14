@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useSelector} from 'react-redux';
-import {Text, StyleSheet, TouchableOpacity} from 'react-native';
-import {Container, Form, Input, Icon, Item, Label, Content} from 'native-base';
+import {Text, StyleSheet, TouchableOpacity, ScrollView} from 'react-native';
+import {Container, Form, Input, Icon, Item, Label} from 'native-base';
 
 import Colors from '@styles/color';
 import {showMessage} from '@utils/index';
@@ -52,7 +52,7 @@ export default function ChangPassword({navigation}) {
   return (
     <Container>
       <HeaderStatusBar title={'Đổi mật khẩu'} />
-      <Content>
+      <ScrollView>
         <Form>
           <Item floatingLabel>
             <Label style={styles.label}>{'Mật khẩu'}</Label>
@@ -105,7 +105,7 @@ export default function ChangPassword({navigation}) {
             <Text style={styles.title}>{'Đổi mật khẩu'}</Text>
           </TouchableOpacity>
         </Form>
-      </Content>
+      </ScrollView>
     </Container>
   );
 }

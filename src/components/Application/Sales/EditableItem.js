@@ -92,12 +92,14 @@ const styles = StyleSheet.create({
     fontFamily: theme.FONT_BOLD,
     fontSize: 14,
     color: '#000',
+    flex: 3,
   },
   value: {
     fontFamily: theme.FONT_FAMILY,
     borderRadius: 8,
     color: '#000',
     fontSize: 14,
+    flex: 7,
   },
   requiredText: {color: 'red'},
 });

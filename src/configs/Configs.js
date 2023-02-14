@@ -13,10 +13,10 @@ export const VN_FORMAT_DATETIME = 'DD/MM/YYYY HH:mm:ss';
 export const GL_FORMAT_DATETIME = 'YYYY-MM-DD HH:mm:ss';
 
 // export const MAIN_DOMAIN = 'http://103.141.144.33:7077';
-// export const MAIN_DOMAIN = 'https://erp.edally.vn';
 // export const MAIN_DOMAIN = 'https://uat-ptf.erpviet.vn';
-export const MAIN_DOMAIN = 'http://10.10.10.74:8888';
-// export const MAIN_DOMAIN = 'http://192.168.32.223:8888';
+export const MAIN_DOMAIN = 'https://test-ptf.erpviet.vn';
+// export const MAIN_DOMAIN = 'http://10.10.10.35:8888';
+// export const MAIN_DOMAIN = 'http://192.168.248.223:8888';
 // export const domain = MAIN_DOMAIN + '/api/v1/me';
 export const domain = MAIN_DOMAIN + '/api/v1/ptf';
 

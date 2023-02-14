@@ -16,7 +16,7 @@
     "apk": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd .."
   },
   "dependencies": {
-    "@react-native-community/async-storage": "^1.12.1",
+    "@react-native-community/async-storage": "1.12.1",
     "@react-native-community/checkbox": "^0.5.14",
     "@react-native-community/datetimepicker": "^6.7.1",
     "@react-navigation/native": "^6.1.1",
@@ -28,6 +28,7 @@
     "i18n-js": "3.7.1",
     "moment": "^2.29.4",
     "native-base": "github:spaceboom73/NativeBase",
+    "postinstall": "^0.8.0",
     "react": "18.1.0",
     "react-native": "0.70.6",
     "react-native-calendars": "^1.1292.0",
